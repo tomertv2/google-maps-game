@@ -4,16 +4,19 @@
     <link rel="stylesheet" href="style.css" />
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
-  </head>
-  <body>
-    <h3>My Maps Game</h3>
-    <!--The div element for the map -->
-    <div id="map"></div>
-    <script src="main.js"></script>
     <script
       defer
       src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD6fexKCtUQ5zLj2TEaOkf_EQstH0qLu-k&callback=initMap"
     ></script>
+    <script src="main.js"></script>
+    <title>Document</title>
+  </head>
+  <body>
+    <h3>My Maps Game</h3>
+    <div>
+        <span>Guess where is:</span>
+        <span id="guessId"></span>
+    </div>
+    <div id="map"></div>
   </body>
 </html>

@@ -2,6 +2,7 @@ let isClicked = false;
 let secretPlace = {};
 let places = [];
 let userCoordinates = { lat: 0, lng: 0 };
+const checkWinRadius = 40000;
 
 function getRndInteger() {
   return Math.floor(Math.random() * 1240) + 1;
@@ -17,6 +18,8 @@ async function initMap() {
   const x = secretPlace.X;
   const y = secretPlace.Y;
   const randomCoordinates = { lat: y, lng: x };
+
+  document.getElementById('guessId').innerHTML = secretPlace.mglsde_l_4;
 
   const map = new google.maps.Map(document.getElementById('map'), {
     zoom: 7.5,
@@ -35,6 +38,16 @@ async function initMap() {
     addMarker(event.latLng, map);
     console.log(userCoordinates);
     console.log(getDistance(userCoordinates, randomCoordinates));
+    const SecretMarkerCircle = new google.maps.Circle({
+      strokeColor: 'white',
+      strokeOpacity: 0.8,
+      strokeWeight: 2,
+      fillColor: '#e3e3e3',
+      fillOpacity: 0.35,
+      map,
+      center: randomCoordinates,
+      radius: checkWinRadius, // The usual radius is 40KM
+    });
   });
 }
 
