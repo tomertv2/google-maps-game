@@ -1,6 +1,7 @@
 let isClicked = false;
 let secretPlace = {};
 let places = [];
+let userCoordinates = { lat: 0, lng: 0 };
 
 function getRndInteger() {
   return Math.floor(Math.random() * 1240) + 1;
@@ -9,37 +10,63 @@ function getRndInteger() {
 // Initialize and add the map
 async function initMap() {
   await fetch('http://localhost:8080/data')
-  .then(response => response.json())
-  .then(data => places = data);
+    .then((response) => response.json())
+    .then((data) => (places = data))
+    .catch((e) => console.log(e));
   secretPlace = places[getRndInteger()];
   const x = secretPlace.X;
   const y = secretPlace.Y;
-  const randomCoordinates = { lat: Number(y), lng: Number(x) };
+  const randomCoordinates = { lat: y, lng: x };
 
   const map = new google.maps.Map(document.getElementById('map'), {
     zoom: 7.5,
-    center: { lat: 31.5, lng: 35 },
-    draggable: false
+    center: { lat: 31.4, lng: 35 },
+    draggable: false,
   });
+
+  const secretMarker = new google.maps.Marker({
+    position: randomCoordinates,
+    map: map,
+  });
+
+  console.log(randomCoordinates);
 
   google.maps.event.addListener(map, 'click', (event) => {
     addMarker(event.latLng, map);
-  });
-
-  const secterMarker = new google.maps.Marker({
-    position: randomCoordinates,
-    map: map,
+    console.log(userCoordinates);
+    console.log(getDistance(userCoordinates, randomCoordinates));
   });
 }
 
 function addMarker(location, map) {
   if (isClicked === false) {
-    new google.maps.Marker({
+    const userMarker = new google.maps.Marker({
       position: location,
       map: map,
     });
+    userCoordinates.lat = userMarker.getPosition().lat();
+    userCoordinates.lng = userMarker.getPosition().lng();
     isClicked = true;
   } else {
     return;
   }
 }
+
+var rad = function (x) {
+  return (x * Math.PI) / 180;
+};
+
+var getDistance = function (p1, p2) {
+  var R = 6378137; // Earth’s mean radius in meter
+  var dLat = rad(p2.lat - p1.lat);
+  var dLong = rad(p2.lng - p1.lng);
+  var a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(rad(p1.lat)) *
+      Math.cos(rad(p2.lat)) *
+      Math.sin(dLong / 2) *
+      Math.sin(dLong / 2);
+  var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  var d = R * c;
+  return d; // returns the distance in meter
+};
