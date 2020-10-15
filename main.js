@@ -8,8 +8,7 @@ function getRndInteger() {
   return Math.floor(Math.random() * 1240) + 1;
 }
 
-// Initialize and add the map
-async function initMap() {
+async function initData() {
   await fetch('http://localhost:8080/data')
     .then((response) => response.json())
     .then((data) => (places = data))
@@ -20,25 +19,55 @@ async function initMap() {
   const randomCoordinates = { lat: y, lng: x };
 
   document.getElementById('guessId').innerHTML = secretPlace.mglsde_l_4;
+}
+
+// Initialize and add the map
+async function initMap() {
+  initData();
 
   const map = new google.maps.Map(document.getElementById('map'), {
     zoom: 7.5,
     center: { lat: 31.4, lng: 35 },
     draggable: false,
+    styles: [
+      {
+        elementType: 'labels',
+        stylers: [
+          {
+            visibility: 'off',
+          },
+        ],
+      },
+      {
+        featureType: 'administrative.neighborhood',
+        stylers: [
+          {
+            visibility: 'off',
+          },
+        ],
+      },
+      {
+        featureType: 'road',
+        stylers: [
+          {
+            visibility: 'off',
+          },
+        ],
+      },
+    ],
   });
 
-  const secretMarker = new google.maps.Marker({
-    position: randomCoordinates,
-    map: map,
-  });
+  google.maps.event.addListener(map, 'click', async (event) => {
+    const userMarker = addMarker(event.latLng, map);
+    userCoordinates.lat = userMarker.getPosition().lat();
+    userCoordinates.lng = userMarker.getPosition().lng();
 
-  console.log(randomCoordinates);
+    const secretMarker = new google.maps.Marker({
+      position: randomCoordinates,
+      map: map,
+    });
 
-  google.maps.event.addListener(map, 'click', (event) => {
-    addMarker(event.latLng, map);
-    console.log(userCoordinates);
-    console.log(getDistance(userCoordinates, randomCoordinates));
-    const SecretMarkerCircle = new google.maps.Circle({
+    const secretMarkerCircle = new google.maps.Circle({
       strokeColor: 'white',
       strokeOpacity: 0.8,
       strokeWeight: 2,
@@ -48,38 +77,50 @@ async function initMap() {
       center: randomCoordinates,
       radius: checkWinRadius, // The usual radius is 40KM
     });
+
+    const distanceRandomGuess = getDistance(userCoordinates, randomCoordinates);
+    if (distanceRandomGuess > checkWinRadius) {
+      alert('Looser!');
+    } else {
+      alert('Winner!');
+    }
+
+    setTimeout(() => {
+      secretMarker.setMap(null);
+      secretMarkerCircle.setMap(null);
+      userMarker.setMap(null);
+    }, 2000);
   });
 }
 
 function addMarker(location, map) {
   if (isClicked === false) {
-    const userMarker = new google.maps.Marker({
+    const newMarker = new google.maps.Marker({
       position: location,
       map: map,
     });
-    userCoordinates.lat = userMarker.getPosition().lat();
-    userCoordinates.lng = userMarker.getPosition().lng();
     isClicked = true;
+    return newMarker;
   } else {
     return;
   }
 }
 
-var rad = function (x) {
+const rad = function (x) {
   return (x * Math.PI) / 180;
 };
 
-var getDistance = function (p1, p2) {
-  var R = 6378137; // Earth’s mean radius in meter
-  var dLat = rad(p2.lat - p1.lat);
-  var dLong = rad(p2.lng - p1.lng);
-  var a =
+const getDistance = function (p1, p2) {
+  const R = 6378137; // Earth’s mean radius in meter
+  const dLat = rad(p2.lat - p1.lat);
+  const dLong = rad(p2.lng - p1.lng);
+  const a =
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
     Math.cos(rad(p1.lat)) *
       Math.cos(rad(p2.lat)) *
       Math.sin(dLong / 2) *
       Math.sin(dLong / 2);
-  var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  var d = R * c;
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  const d = R * c;
   return d; // returns the distance in meter
 };
