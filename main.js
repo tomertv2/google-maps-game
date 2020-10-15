@@ -2,6 +2,7 @@ let isClicked = false;
 let secretPlace = {};
 let places = [];
 let userCoordinates = { lat: 0, lng: 0 };
+let randomCoordinates = { lat: 0, lng: 0 };
 const checkWinRadius = 40000;
 
 function getRndInteger() {
@@ -16,13 +17,15 @@ async function initData() {
   secretPlace = places[getRndInteger()];
   const x = secretPlace.X;
   const y = secretPlace.Y;
-  const randomCoordinates = { lat: y, lng: x };
+  randomCoordinates = { lat: x, lng: y };
 
-  document.getElementById('guessId').innerHTML = secretPlace.mglsde_l_4;
+  document.getElementById('guess-id').innerHTML = secretPlace.mglsde_l_4;
 }
 
+var myMap;
+
 // Initialize and add the map
-async function initMap() {
+function initMap() {
   initData();
 
   const map = new google.maps.Map(document.getElementById('map'), {
@@ -57,7 +60,13 @@ async function initMap() {
     ],
   });
 
-  google.maps.event.addListener(map, 'click', async (event) => {
+  myMap = map;
+
+  google.maps.event.addListener(map, 'click', (event) => {
+    if (isClicked) {
+      return;
+    }
+
     const userMarker = addMarker(event.latLng, map);
     userCoordinates.lat = userMarker.getPosition().lat();
     userCoordinates.lng = userMarker.getPosition().lng();
@@ -93,17 +102,20 @@ async function initMap() {
   });
 }
 
+document.addEventListener('DOMContentLoaded', function () {
+  document.getElementById('replay-btn').addEventListener('click', function () {
+    isClicked = false;
+    console.log(isClicked);
+    initMap();
+  });
+});
+
 function addMarker(location, map) {
-  if (isClicked === false) {
-    const newMarker = new google.maps.Marker({
-      position: location,
-      map: map,
-    });
-    isClicked = true;
-    return newMarker;
-  } else {
-    return;
-  }
+  isClicked = true;
+  return new google.maps.Marker({
+    position: location,
+    map: map,
+  });
 }
 
 const rad = function (x) {
