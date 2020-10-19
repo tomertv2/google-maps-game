@@ -3,7 +3,6 @@ let places = [];
 let userCoordinates = { lat: 0, lng: 0 };
 let randomCoordinates = { lat: 0, lng: 0 };
 let score = 0;
-const checkWinRadius = 40000;
 
 function getRndInteger() {
   return Math.floor(Math.random() * 1240) + 1;
@@ -86,18 +85,21 @@ function initMap() {
       radius: distanceRandomGuess,
     });
 
-    if (distanceRandomGuess < checkWinRadius) {
-      console.log('Pretty close!');
-    } else {
-      console.log('So far away!');
-    }
-
     score += Math.floor(Math.abs(distanceRandomGuess - 400000.0) / 10000.0);
 
     document.getElementById('score-id').innerHTML = score;
 
-    console.log(distanceRandomGuess);
-    console.log(score);
+    if (distanceRandomGuess < 40000) {
+      console.log('Pretty close!');
+      document.getElementById('phrase').innerHTML = 'Pretty close!';
+    } else {
+      console.log('So far away!');
+      document.getElementById('phrase').innerHTML = 'So far away...';
+    }
+
+    document.getElementById('distance').innerHTML = `You were ${Math.floor(
+      distanceRandomGuess / 1000
+    )} KM from the location.`;
 
     // show the answer for two seconds
     setTimeout(() => {
@@ -110,6 +112,8 @@ function initMap() {
 
 document.addEventListener('DOMContentLoaded', function () {
   document.getElementById('replay-btn').addEventListener('click', function () {
+    document.getElementById('phrase').innerHTML = '';
+    document.getElementById('distance').innerHTML = '';
     isClicked = false;
     initMap();
   });

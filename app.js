@@ -12,4 +12,6 @@ app.get('/data', async (req, res) => {
   res.send(parsedPlaces);
 });
 
+// app.use('/home', express.static(__dirname + '/index.html'));
+
 module.exports = app;
