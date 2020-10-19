@@ -1,8 +1,8 @@
 let isClicked = false;
-let secretPlace = {};
 let places = [];
 let userCoordinates = { lat: 0, lng: 0 };
 let randomCoordinates = { lat: 0, lng: 0 };
+let score = 0;
 const checkWinRadius = 40000;
 
 function getRndInteger() {
@@ -14,15 +14,13 @@ async function initData() {
     .then((response) => response.json())
     .then((data) => (places = data))
     .catch((e) => console.log(e));
-  secretPlace = places[getRndInteger()];
+  const secretPlace = places[getRndInteger()];
   const x = secretPlace.X;
   const y = secretPlace.Y;
   randomCoordinates = { lat: x, lng: y };
 
   document.getElementById('guess-id').innerHTML = secretPlace.mglsde_l_4;
 }
-
-var myMap;
 
 // Initialize and add the map
 function initMap() {
@@ -32,6 +30,7 @@ function initMap() {
     zoom: 7.5,
     center: { lat: 31.4, lng: 35 },
     draggable: false,
+    // Style not working because I did not paid for google services
     styles: [
       {
         elementType: 'labels',
@@ -60,8 +59,6 @@ function initMap() {
     ],
   });
 
-  myMap = map;
-
   google.maps.event.addListener(map, 'click', (event) => {
     if (isClicked) {
       return;
@@ -76,6 +73,8 @@ function initMap() {
       map: map,
     });
 
+    const distanceRandomGuess = getDistance(userCoordinates, randomCoordinates);
+
     const secretMarkerCircle = new google.maps.Circle({
       strokeColor: 'white',
       strokeOpacity: 0.8,
@@ -84,16 +83,23 @@ function initMap() {
       fillOpacity: 0.35,
       map,
       center: randomCoordinates,
-      radius: checkWinRadius, // The usual radius is 40KM
+      radius: distanceRandomGuess,
     });
 
-    const distanceRandomGuess = getDistance(userCoordinates, randomCoordinates);
-    if (distanceRandomGuess > checkWinRadius) {
-      alert('Looser!');
+    if (distanceRandomGuess < checkWinRadius) {
+      console.log('Pretty close!');
     } else {
-      alert('Winner!');
+      console.log('So far away!');
     }
 
+    score += Math.floor(Math.abs(distanceRandomGuess - 400000.0) / 10000.0);
+
+    document.getElementById('score-id').innerHTML = score;
+
+    console.log(distanceRandomGuess);
+    console.log(score);
+
+    // show the answer for two seconds
     setTimeout(() => {
       secretMarker.setMap(null);
       secretMarkerCircle.setMap(null);
@@ -105,7 +111,6 @@ function initMap() {
 document.addEventListener('DOMContentLoaded', function () {
   document.getElementById('replay-btn').addEventListener('click', function () {
     isClicked = false;
-    console.log(isClicked);
     initMap();
   });
 });
