@@ -3,12 +3,14 @@ let places = [];
 let userCoordinates = { lat: 0, lng: 0 };
 let randomCoordinates = { lat: 0, lng: 0 };
 let score = 0;
+let routines = 0;
+let timer = 10;
 
-function getRndInteger() {
+const getRndInteger = () => {
   return Math.floor(Math.random() * 1240) + 1;
-}
+};
 
-async function initData() {
+const initData = async () => {
   await fetch('http://localhost:8080/data')
     .then((response) => response.json())
     .then((data) => (places = data))
@@ -17,9 +19,9 @@ async function initData() {
   const x = secretPlace.X;
   const y = secretPlace.Y;
   randomCoordinates = { lat: x, lng: y };
-
+  routines++;
   document.getElementById('guess-id').innerHTML = secretPlace.mglsde_l_4;
-}
+};
 
 // Initialize and add the map
 function initMap() {
@@ -89,13 +91,9 @@ function initMap() {
 
     document.getElementById('score-id').innerHTML = score;
 
-    if (distanceRandomGuess < 40000) {
-      console.log('Pretty close!');
-      document.getElementById('phrase').innerHTML = 'Pretty close!';
-    } else {
-      console.log('So far away!');
-      document.getElementById('phrase').innerHTML = 'So far away...';
-    }
+    distanceRandomGuess < 40000
+      ? (document.getElementById('phrase').innerHTML = 'Pretty close!')
+      : (document.getElementById('phrase').innerHTML = 'So far away...');
 
     document.getElementById('distance').innerHTML = `You were ${Math.floor(
       distanceRandomGuess / 1000
@@ -110,28 +108,43 @@ function initMap() {
   });
 }
 
-document.addEventListener('DOMContentLoaded', function () {
-  document.getElementById('replay-btn').addEventListener('click', function () {
-    document.getElementById('phrase').innerHTML = '';
-    document.getElementById('distance').innerHTML = '';
-    isClicked = false;
-    initMap();
-  });
+document.addEventListener('DOMContentLoaded', () => {
+  setInterval(() => {
+    intervalFunc();
+  }, 1000);
 });
 
-function addMarker(location, map) {
+const intervalFunc = () => {
+  document.getElementById('timer').innerHTML = timer--;
+  if (isClicked || timer === 0) {
+    timer = 10;
+    isClicked = false;
+    initMap();
+  }
+  if (routines === 10) {
+    timer = 10;
+    routines = 0;
+    isClicked = false;
+    alert(`your score is ${score}`);
+    score = 0;
+    document.getElementById('score-id').innerHTML = score;
+    initMap();
+  }
+};
+
+const addMarker = (location, map) => {
   isClicked = true;
   return new google.maps.Marker({
     position: location,
     map: map,
   });
-}
+};
 
-const rad = function (x) {
+const rad = (x) => {
   return (x * Math.PI) / 180;
 };
 
-const getDistance = function (p1, p2) {
+const getDistance = (p1, p2) => {
   const R = 6378137; // Earth’s mean radius in meter
   const dLat = rad(p2.lat - p1.lat);
   const dLong = rad(p2.lng - p1.lng);
